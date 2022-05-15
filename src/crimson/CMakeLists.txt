@@ -19,6 +19,7 @@ set(crimson_common_srcs
   common/formatter.cc
   common/perf_counters_collection.cc
   common/log.cc
+  common/logfile.cc
   common/logclient.cc
   common/operation.cc
   common/throttle.cc

@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <fstream>
 #include <random>
 
 #include <seastar/apps/lib/stop_signal.hh>
@@ -25,6 +26,7 @@
 #include "crimson/common/fatal_signal.h"
 #include "crimson/mon/MonClient.h"
 #include "crimson/net/Messenger.h"
+#include "crimson/common/logfile.h"
 #include "global/pidfile.h"
 #include "osd.h"
 
@@ -238,6 +240,9 @@ int main(int argc, const char* argv[])
           local_conf().parse_config_files(conf_file_list).get();
           local_conf().parse_env().get();
           local_conf().parse_argv(config_proxy_args).get();
+          if (const auto ret = logfile_set_ostream(local_conf()->log_file); ret < 0) {
+            std::cerr << "logfile_set_ostream failed with " << ret << " error:" << cpp_strerror(-ret) << std::endl;
+          }
           if (const auto ret = pidfile_write(local_conf()->pid_file);
               ret == -EACCES || ret == -EAGAIN) {
             ceph_abort_msg(
@@ -329,7 +334,7 @@ int main(int argc, const char* argv[])
           return EXIT_FAILURE;
         }
         logger().info("crimson shutdown complete");
-        return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
       });
     });
   } catch (...) {
