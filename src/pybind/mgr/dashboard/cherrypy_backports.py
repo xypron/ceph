@@ -32,7 +32,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 
 # The SSL code in CherryPy 3.5.0 is buggy.  It was fixed long ago,
 # but 3.5.0 is still shipping in major linux distributions
@@ -42,7 +42,7 @@ from distutils.version import StrictVersion
 def patch_http_connection_init(v):
     # It was fixed in 3.7.0.  Exact lower bound version is probably earlier,
     # but 3.5.0 is what this monkey patch is tested on.
-    if StrictVersion("3.5.0") <= v < StrictVersion("3.7.0"):
+    if LooseVersion("3.5.0") <= v < LooseVersion("3.7.0"):
         from cherrypy.wsgiserver.wsgiserver2 import CP_fileobject, HTTPConnection
 
         def fixed_init(hc_self, server, sock, makefile=CP_fileobject):
@@ -63,7 +63,7 @@ def patch_http_connection_init(v):
 def skip_wait_for_occupied_port(v):
     # the issue was fixed in 3.2.3. it's present in 3.2.2 (current version on
     # centos:7) and back to at least 3.0.0.
-    if StrictVersion("3.1.2") <= v < StrictVersion("3.2.3"):
+    if LooseVersion("3.1.2") <= v < LooseVersion("3.2.3"):
         # https://github.com/cherrypy/cherrypy/issues/1100
         from cherrypy.process import servers
         servers.wait_for_occupied_port = lambda host, port: None
@@ -71,7 +71,7 @@ def skip_wait_for_occupied_port(v):
 
 # cherrypy.wsgiserver was extracted wsgiserver into cheroot in cherrypy v9.0.0
 def patch_builtin_ssl_wrap(v, new_wrap):
-    if v < StrictVersion("9.0.0"):
+    if v < LooseVersion("9.0.0"):
         from cherrypy.wsgiserver.ssl_builtin import BuiltinSSLAdapter as builtin_ssl
     else:
         from cheroot.ssl.builtin import BuiltinSSLAdapter as builtin_ssl  # type: ignore
@@ -81,7 +81,7 @@ def patch_builtin_ssl_wrap(v, new_wrap):
 def accept_exceptions_from_builtin_ssl(v):
     # the fix was included by cheroot v5.2.0, which was included by cherrypy
     # 10.2.0.
-    if v < StrictVersion("10.2.0"):
+    if v < LooseVersion("10.2.0"):
         # see https://github.com/cherrypy/cheroot/pull/4
         import ssl
 
@@ -121,7 +121,7 @@ def accept_socket_error_0(v):
     except ImportError:
         pass
 
-    if v < StrictVersion("9.0.0") or cheroot_version < StrictVersion("6.5.5"):
+    if v < LooseVersion("9.0.0") or cheroot_version < LooseVersion("6.5.5"):
         generic_socket_error = OSError
 
         def accept_socket_error_0(func):
@@ -157,7 +157,7 @@ def patch_request_unique_id(v):
     Monkey-patching is preferred over alternatives as inheritance, as it'd break
     type checks (cherrypy/lib/cgtools.py: `isinstance(obj, _cprequest.Request)`)
     """
-    if v < StrictVersion('11.1.0'):
+    if v < LooseVersion('11.1.0'):
         import uuid
         from functools import update_wrapper
 
